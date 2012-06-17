@@ -1,0 +1,10 @@
+%h1= get :title
+
+.product_details
+  %h4= get(:product).name
+  %small= get(:product).price
+  %p= get(:product).description
+  - if get(:product).available?
+    It's in stock
+  - else
+    It's outta stock

@@ -1,0 +1,14 @@
+%h4 Hi there #{get :name}
+
+- if present?(:products)
+  %h5 List of products
+  .product
+    - get(:products).each do |product|
+      %h6= product.name
+      %small= product.price
+      %p= product.description
+      - if product.available?
+        It's in stock
+      - else
+        It's outta stock
+

@@ -1,0 +1,10 @@
+!!!5
+%html
+  %head
+    %title= get :title
+    %script{type: 'text/javascript', src: javascript_path('app')}
+
+  %body
+    %h1 Basic Layout
+    %blockquote
+      = get :body

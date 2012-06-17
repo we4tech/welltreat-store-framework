@@ -1,0 +1,4 @@
+%h5 Hi it's from products index
+
+- get(:products).each do |prod|
+  = partial '_product', prod: prod
