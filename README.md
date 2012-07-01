@@ -1,12 +1,12 @@
-flexi-model
+Well Treat Store Framework
 ===========
 
-Build flexible database model with dynamic fields (right now based on ActiveRecord soon it will work with mongoid too)
+Build store just like your another web site building project
 
 Features
 ===========
 
-Collection
+Micro framework
 
 Relation
 

@@ -22,33 +22,33 @@ module WelltreatStoreFramework
 
       # Find all stores from the configured path
       # return an array of instance StoreApp
-      def find_stores
-        self.stores ||= _detect_stores
+      def find_stores(partition_object = nil)
+        self.stores ||= _detect_stores(partition_object)
       end
 
       # Find store by the given name
       # Return StoreApp instance
-      def find_store_by_name(name)
-        find_stores[name]
+      def find_store_by_name(name, partition_object = nil)
+        find_stores(partition_object)[name]
       end
 
-      # NOTE: Only applicable for rack-development environment
+      # Establish database connection
       def connect_database!
-        if 'rack-development' == ENV["ENVIRONMENT"]
-          ActiveRecord::Base.establish_connection configuration.database_config
+        ActiveRecord::Base.establish_connection configuration.database_config
+
+        if configuration.database_schema_file.present?
           puts "Importing database schema - "
           require configuration.database_schema_file
-        else
-          raise 'Do not call this method in production environment!'
         end
       end
 
       private
-      def _detect_stores
+      def _detect_stores(partition_object = nil)
         _stores = { }
         Dir.glob(File.join(configuration.store_path, '*')).each do |_path|
           _name          = _path.split('/').last
           _stores[_name] = StoreApp.new.tap do |inst|
+            inst.partition_object = partition_object
             inst.path             = _path
             inst.name             = _name
             inst.config_path      = File.join(_path, 'config')

@@ -30,6 +30,7 @@ end
 
 app = WelltreatStoreFramework::Core.find_store_by_name('hello-store')
 WelltreatStoreFramework::Core.connect_database!
+app.start
 
 # Use static file handler
 use Rack::Static, :urls => ["/assets"], :root => File.join(app.assets_path, '..')

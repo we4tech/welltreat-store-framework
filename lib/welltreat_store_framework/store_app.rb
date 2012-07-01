@@ -4,23 +4,35 @@ module WelltreatStoreFramework
     # Declare exceptions
     class ControllerNotFound < StandardError
       attr_accessor :controller_name
+
       def initialize(_c_name)
         super "Controller - #{_c_name} not found."
         self.controller_name = _c_name
       end
     end
+
     class ActionNotFound < StandardError
       attr_accessor :action_name, :controller_name
+
       def initialize(_a_name, _c_name)
         super "Action - #{_a_name} from controller - #{_c_name} not found."
-        self.action_name = _a_name
+        self.action_name     = _a_name
         self.controller_name = _c_name
       end
     end
+
     class ExecutionError < StandardError;
     end
-    class TemplateNotFound < StandardError;
+
+    class TemplateNotFound < StandardError
+      attr_accessor :file
+
+      def initialize(_file)
+        super "Template - #{_file} not found."
+        self.file = _file
+      end
     end
+
     class TemplateRenderingError < StandardError;
     end
 
@@ -36,7 +48,7 @@ module WelltreatStoreFramework
     # Declare attribute accessors
     attr_accessor :name, :path, :config_path, :routes_path,
                   :controllers_path, :models_path, :views_path, :assets_path,
-                  :controllers, :models, :views, :started
+                  :views, :started, :partition_object
 
     # Default constructor with attribute hash, if attribute hash is passed
     # it will set value through setter accessors
@@ -78,22 +90,43 @@ module WelltreatStoreFramework
       end
     end
 
+    def base; _base_module end
+
+    def models
+      base::Models
+    end
+
+    def controllers
+      base::Controllers
+    end
+
+
     # Handle request for the specified path and request
     # Return status and html content string
     def dispatch(path, request, response)
-      case path
-        when '/'
-          _execute_action(:Home, :index, request, response)
-        else
-          _controller_name, _action, _id = self.send(:_extract_path, path)
-          request.send(:set_param, :id, _id)
-
-          _execute_action(_controller_name, _action, request, response)
+      if WelltreatStoreFramework::Core.configuration.auto_reload
+        restart
       end
-    end
 
-    def models
-      _base_module::Models
+      begin
+        case path
+          when '/'
+            _execute_action(:Home, :index, request, response)
+          else
+            _controller_name, _action, _id = self.send(:_extract_path, path)
+            request.send(:set_param, :id, _id)
+
+            _execute_action(_controller_name, _action, request, response)
+        end
+
+        # Handle 404
+      rescue WelltreatStoreFramework::StoreApp::ControllerNotFound
+        _execute_action(:Home, :not_found, request, response)
+
+      rescue WelltreatStoreFramework::StoreApp::ActionNotFound
+        _execute_action(:Home, :not_found, request, response)
+
+      end
     end
 
     # Make it rack compatible
@@ -122,7 +155,7 @@ module WelltreatStoreFramework
     end
 
     def _check_action_existence!(_controller_inst, _action)
-      raise ActionNotFound.new(_action, _controller_inst.name) unless _controller_inst.respond_to?(_action)
+      raise ActionNotFound.new(_action, _controller_inst.class.name) unless _controller_inst.respond_to?(_action)
     end
 
     def _find_controller_inst(controller_name)
@@ -190,22 +223,25 @@ module WelltreatStoreFramework
     end
 
     def _create_base_module
-      mod_name = "#{self.name.capitalize}#{Time.now.to_i}".tableize.camelize
-      eval <<-RUBY
+      mod_name = "#{self.name.capitalize}AppStack".underscore.classify
+      base_const = eval <<-RUBY, nil, "dynamic/#{mod_name}", __LINE__ + 1
         module #{mod_name}
 
           module Controllers
-            WelltreatStoreFramework::StoreApp::AppStack.load_classes(self, "#{self.controllers_path}")
+            AppStack.load_classes(self, "#{self.controllers_path}")
           end
 
           module Models
-            WelltreatStoreFramework::StoreApp::AppStack.load_classes(self, "#{self.models_path}")
+            AppStack.load_classes(self, "#{self.models_path}")
           end
-
         end
 
         #{mod_name}
       RUBY
+
+      AppStack.generate_partition_object_getter(self, [base_const::Models])
+
+      base_const
     end
 
 
@@ -213,12 +249,25 @@ module WelltreatStoreFramework
     class AppStack
       class << self
 
+        def generate_partition_object_getter(store, _modules)
+          if store.partition_object
+            _modules.each do |_mod|
+              _mod.constants.each do |_const|
+                _class = _mod.const_get(_const)
+                if _class.respond_to?(:set_flexi_partition_id)
+                  _class.send(:set_flexi_partition_id, store.partition_object.id)
+                end
+              end
+            end
+          end
+        end
+
         def load_classes(_mod, _path)
           if _path.match(/\.rb$/)
-            _mod.module_eval File.read(_path)
+            _mod.module_eval File.read(_path), _path, 0
           else
             Dir.glob(File.join(_path, "*.rb")).each do |_file|
-              _mod.module_eval File.read(_file)
+              _mod.module_eval File.read(_file), _file, 0
             end
           end
         end

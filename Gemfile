@@ -2,7 +2,7 @@
 source "https://rubygems.org"
 
 gem 'jeweler'
-gem 'active_support'
+gem 'activesupport', '~> 3.2.0'
 gem 'haml'
 
 # Our custom gems
@@ -13,7 +13,7 @@ group :test do
   gem 'sqlite3'
 
   # Test environment dependencies
-  gem 'activerecord'
+  gem 'activerecord', '~> 3.2.0'
 
   # Testing related gems
   gem 'rspec'

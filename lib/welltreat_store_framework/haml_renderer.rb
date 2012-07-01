@@ -1,4 +1,7 @@
+require 'welltreat_store_framework/haml_renderer/paths'
 require 'welltreat_store_framework/haml_renderer/partial'
+require 'welltreat_store_framework/haml_renderer/tags_helper'
+require 'welltreat_store_framework/haml_renderer/lorem_helper'
 
 module WelltreatStoreFramework
   module HamlRenderer
@@ -6,6 +9,8 @@ module WelltreatStoreFramework
 
     # Render HAML template and set content in response.content variable
     def render!(request, response)
+      return if response.content.present?
+
       _layout_key    = response.layout.to_s
       _template_key  = [
           response.controller_name,
@@ -15,7 +20,7 @@ module WelltreatStoreFramework
       _template_file = _full_template_path(response)
       _layout_file   = _full_layout_path(response)
 
-      raise StoreApp::TemplateNotFound if _template_file.nil?
+      raise StoreApp::TemplateNotFound.new(_template_key) if _template_file.nil?
 
       # Render view with layout
       context = Context.new(self, request, response)
@@ -28,8 +33,14 @@ module WelltreatStoreFramework
     end
 
     def _singleton_haml_instance(_key, _file)
-      _haml_engines[_key] ||=
-          Haml::Engine.new(File.read(_file), filename: _file)
+      raise StoreApp::TemplateNotFound.new(_file) if _file.nil? || !File.exist?(_file)
+
+      if WelltreatStoreFramework::Core.configuration.auto_reload
+        Haml::Engine.new(File.read(_file), filename: _file)
+      else
+        _haml_engines[_key] ||=
+            Haml::Engine.new(File.read(_file), filename: _file)
+      end
     end
 
     def _haml_engines
@@ -61,7 +72,8 @@ module WelltreatStoreFramework
     end
 
     class Context
-      include WelltreatStoreFramework::HamlRenderer::Partial
+      include Paths, Partial, TagsHelper, LoremHelper
+
       attr_accessor :request, :response
 
       def initialize(app, request, response)
@@ -91,27 +103,8 @@ module WelltreatStoreFramework
         local_exists?(k) && get_local(k).present?
       end
 
-      def asset_path(*_paths)
-        UrlJoin.new('/assets').join(_paths)
-      end
-
-      def image_path(_path)
-        asset_path 'images', _path
-      end
-
-      def stylesheet_path(_path)
-        _path = _path.to_s
-        _path << '.css' unless _path.to_s.match(/\.css$/)
-        asset_path 'stylesheets', _path
-      end
-
-      def javascript_path(_path)
-        _path = _path.to_s
-        _path << '.js' unless _path.to_s.match(/\.js$/)
-        asset_path 'javascripts', _path
-      end
-
       delegate :exists?, :present?, :set, :get, :to => :response
+
     end
 
     class UrlJoin

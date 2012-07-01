@@ -17,13 +17,13 @@ end
 begin
   require "jeweler"
   Jeweler::Tasks.new do |gem|
-    gem.name    = "flexi_model"
-    gem.summary = "Build flexible database model with dynamic fields (right now based on ActiveRecord soon it will work with mongoid too)"
-    gem.homepage = 'https://github.com/we4tech/flexi-model/'
-    gem.description = 'Flexible Model'
+    gem.name    = "welltreat-store-framework"
+    gem.summary = "Build store just like your another web development project."
+    gem.homepage = 'https://github.com/we4tech/welltreat-store-framework/'
+    gem.description = 'WellTreat Store Framework'
     gem.email   = ["hasan@somewherein.net"]
     gem.authors = ["nhm tanveer hossain khan"]
-    gem.files   = Dir["{lib}/**/*", "{spec}"]
+    gem.files   = Dir["{lib}/**/*", "{spec}/**/*", "{sample}/**/*"]
   end
 
   Jeweler::GemcutterTasks.new

@@ -68,8 +68,24 @@ describe WelltreatStoreFramework::Core do
       end
     end
 
-    let(:app) { WelltreatStoreFramework::Core.find_store_by_name('hello-store') }
+    let(:store) {
+      s = mock()
+      s.stub(:id).and_return(3)
+      s
+    }
+    let(:app) { WelltreatStoreFramework::Core.find_store_by_name('hello-store', store) }
     subject { app }
+
+    it 'should have partition_object accessor' do
+      subject.respond_to?(:partition_object).should be
+      subject.respond_to?(:partition_object=).should be
+    end
+
+    it 'should set partition object id to all models' do
+      subject.models.constants.each do |_c|
+        subject.models.const_get(_c).flexi_partition_id.should be == 3
+      end
+    end
 
     # Attributes
     [:name, :controllers_path, :models_path, :config_path, :assets_path, :path].each do |_attr|
@@ -106,7 +122,7 @@ describe WelltreatStoreFramework::Core do
         subject { app.send(:_base_module) }
 
         it { should be_a Module }
-        its(:name) { should match /^WelltreatStoreFramework::StoreApp::HelloStore\d*/ }
+        its(:name) { should match /^WelltreatStoreFramework::StoreApp::HelloStoreAppStack$/ }
 
         [:Controllers, :Models].each do |_const|
           it "should have defined constant #{_const}" do

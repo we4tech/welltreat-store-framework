@@ -6,7 +6,8 @@ describe WelltreatStoreFramework::StoreApp do
   before do
     WelltreatStoreFramework::Core.reset!
     WelltreatStoreFramework::Core.setup do |config|
-      config.store_path = _DEFAULT_STORE_PATH
+      config.store_path  = _DEFAULT_STORE_PATH
+      config.auto_reload = true
     end
   end
 
@@ -50,9 +51,34 @@ describe WelltreatStoreFramework::StoreApp do
 
       its(:template) { should == :index }
       its(:layout) { should == :default }
-      its(:content) { should match "Product 1"}
-      its(:content) { should match "Product 2"}
-      its(:content) { should match "<!DOCTYPE html>"}
+      its(:content) { should match "Product 1" }
+      its(:content) { should match "Product 2" }
+      its(:content) { should match "<!DOCTYPE html>" }
+    end
+
+    context 'auto reload enabled' do
+      it 'should have same base module name' do
+        _old_app_mod = app.send(:_base_module).name
+        app.dispatch('/', request, response)
+
+        app.send(:_base_module).name.should eql _old_app_mod
+      end
+
+      it 'should have different base object_id' do
+        _old_app_mod_id = app.send(:_base_module).object_id
+        app.dispatch('/', request, response)
+
+        app.send(:_base_module).object_id.should_not eql _old_app_mod_id
+      end
+
+    end
+
+    context 'not found url' do
+      before { app.dispatch('/Something does not exists', request, response) }
+      before { app.render!(request, response) }
+      subject { response }
+
+      its(:content) { should match /not\s*found/i }
     end
   end
 
