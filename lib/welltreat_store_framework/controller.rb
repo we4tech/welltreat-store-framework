@@ -9,11 +9,26 @@ module WelltreatStoreFramework
     end
 
     def serve(request)
+    end
 
+    [:notice, :alert, :success].map(&:to_s).each do |_kind|
+      module_eval <<-CODE
+        def set_flash_#{_kind}(session, msg)
+          _flash_from(session)[:#{_kind}] = msg
+        end
+
+        def get_flash_#{_kind}(session)
+          _flash_from(session)[:#{_kind}]
+        end
+      CODE
+    end
+
+    def _flash_from(session)
+      session[:flash] ||= { }
     end
 
     class Request
-      attr_accessor :path, :params, :headers, :rack_request
+      attr_accessor :path, :params, :headers, :rack_request, :env
 
       def initialize(attrs = { })
         @headers      = { }
@@ -40,13 +55,14 @@ module WelltreatStoreFramework
               :params       => request.params,
               :headers      => env,
               :rack_request => request,
-              :path         => request.path
+              :path         => request.path,
+              :env          => env
           )
         end
       end
 
-
       private
+
       def set_param(k, v)
         self.params[k] = v
       end
@@ -99,6 +115,17 @@ module WelltreatStoreFramework
       def present?(k)
         exists?(k) && get(k).present?
       end
+
+      def redirect_to(path, status = 302)
+        self.status = status
+        self.add_header("Location", path)
+        self.content = ''
+      end
+
+      def redirect?
+        [301, 302, 303, 307].include? self.status
+      end
+
     end
   end
 end

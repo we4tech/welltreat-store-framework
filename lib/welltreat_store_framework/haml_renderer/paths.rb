@@ -8,7 +8,9 @@ module WelltreatStoreFramework
       end
 
       def image_path(_path)
-        if sprockets_enabled?
+        if _path.to_s.match(/^\//)
+          _path
+        elsif sprockets_enabled?
           asset_path _path
         else
           asset_path 'images', _path
@@ -19,7 +21,9 @@ module WelltreatStoreFramework
         _path = _path.to_s
         _path << '.css' unless _path.to_s.match(/\.css$/)
 
-        if sprockets_enabled?
+        if _path.to_s.match(/^\//)
+          _path
+        elsif sprockets_enabled?
           asset_path _path
         else
           asset_path 'stylesheets', _path
@@ -30,7 +34,9 @@ module WelltreatStoreFramework
         _path = _path.to_s
         _path << '.js' unless _path.to_s.match(/\.js$/)
 
-        if sprockets_enabled?
+        if _path.to_s.match(/^\//)
+          _path
+        elsif sprockets_enabled?
           asset_path _path
         else
           asset_path 'javascripts', _path

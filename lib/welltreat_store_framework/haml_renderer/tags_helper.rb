@@ -42,6 +42,10 @@ module WelltreatStoreFramework
         text[0..length - 1]
       end
 
+      def strip_tags(text, options = {})
+        text.gsub(/<\/?[\w\d\s\-_'="]+>/, '')
+      end
+
       def content_tag(tag_name, content, attrs = { })
         html = "<#{tag_name} #{_generate_attributes(attrs)}"
 

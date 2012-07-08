@@ -8,7 +8,8 @@ module WelltreatStoreFramework
     extend ActiveSupport::Concern
 
     # Render HAML template and set content in response.content variable
-    def render!(request, response)
+    def render!(request, response, options)
+      return if response.redirect?
       return if response.content.present?
 
       _layout_key    = response.layout.to_s
@@ -23,7 +24,7 @@ module WelltreatStoreFramework
       raise StoreApp::TemplateNotFound.new(_template_key) if _template_file.nil?
 
       # Render view with layout
-      context = Context.new(self, request, response)
+      context = Context.new(self, request, response, options)
 
       # Render sub view
       context.set :body, _singleton_haml_instance(_template_key, _template_file).render(context)
@@ -74,12 +75,13 @@ module WelltreatStoreFramework
     class Context
       include Paths, Partial, TagsHelper, LoremHelper
 
-      attr_accessor :request, :response
+      attr_accessor :request, :response, :options
 
-      def initialize(app, request, response)
+      def initialize(app, request, response, options)
         @app      = app
         @request  = request
         @response = response
+        @options  = options || { }
         @locals   = { }
       end
 
@@ -103,8 +105,43 @@ module WelltreatStoreFramework
         local_exists?(k) && get_local(k).present?
       end
 
-      delegate :exists?, :present?, :set, :get, :to => :response
+      def session
+        options[:session]
+      end
 
+      def notice
+        get_flash :notice
+      end
+
+      def alert
+        get_flash :alert
+      end
+
+      def success
+        get_flash :success
+      end
+
+      def flash_exist?
+        notice || alert || success
+      end
+
+      def get_flash(k)
+        @flash_values    ||= { }
+        @flash_values[k] ||= flash[k]
+        flash[k] = nil if @flash_values[k].present?
+
+        @flash_values[k]
+      end
+
+      def set_flash(k, v)
+        flash[k] = v
+      end
+
+      def flash
+        options[:session][:flash] ||= { }
+      end
+
+      delegate :exists?, :present?, :set, :get, :to => :response
     end
 
     class UrlJoin

@@ -90,7 +90,9 @@ module WelltreatStoreFramework
       end
     end
 
-    def base; _base_module end
+    def base;
+      _base_module
+    end
 
     def models
       base::Models
@@ -103,7 +105,7 @@ module WelltreatStoreFramework
 
     # Handle request for the specified path and request
     # Return status and html content string
-    def dispatch(path, request, response)
+    def dispatch(path, request, response, options)
       if WelltreatStoreFramework::Core.configuration.auto_reload
         restart
       end
@@ -111,38 +113,39 @@ module WelltreatStoreFramework
       begin
         case path
           when '/'
-            _execute_action(:Home, :index, request, response)
+            _execute_action(:Home, :index, request, response, options)
           else
             _controller_name, _action, _id = self.send(:_extract_path, path)
             request.send(:set_param, :id, _id)
 
-            _execute_action(_controller_name, _action, request, response)
+            _execute_action(_controller_name, _action, request, response, options)
         end
 
         # Handle 404
       rescue WelltreatStoreFramework::StoreApp::ControllerNotFound
-        _execute_action(:Home, :not_found, request, response)
+        _execute_action(:Home, :not_found, request, response, options)
 
       rescue WelltreatStoreFramework::StoreApp::ActionNotFound
-        _execute_action(:Home, :not_found, request, response)
-
+        _execute_action(:Home, :not_found, request, response, options)
       end
     end
 
     # Make it rack compatible
     def call(env)
-      request  = WelltreatStoreFramework::Controller::Request.
-          initialize_from_env(env)
+      request  = WelltreatStoreFramework::Controller::Request.initialize_from_env(env)
       response = WelltreatStoreFramework::Controller::Response.new
+      options = {
+          session: env['rack.session']
+      }
 
-      dispatch request.path, request, response
-      render! request, response
+      dispatch request.path, request, response, options
+      render! request, response, options
 
       [response.status, response.headers, [response.content]]
     end
 
     private
-    def _execute_action(_controller_name, _action, request, response)
+    def _execute_action(_controller_name, _action, request, response, options)
       _controller_inst = _find_controller_inst(_controller_name)
       _check_action_existence!(_controller_inst, _action)
 
@@ -151,7 +154,7 @@ module WelltreatStoreFramework
       response.controller_name = _controller_name
 
       # Execute action
-      _controller_inst.send(_action, request, response)
+      _controller_inst.send(_action, request, response, options)
     end
 
     def _check_action_existence!(_controller_inst, _action)
@@ -201,6 +204,7 @@ module WelltreatStoreFramework
     end
 
     def _dispose!
+      @_instances = nil
       self.class.send(:remove_const, self.send(:_base_module_name))
       self._base_module     = nil
       self._all_controllers = nil
@@ -223,8 +227,8 @@ module WelltreatStoreFramework
     end
 
     def _create_base_module
-      mod_name = "#{self.name.capitalize}AppStack".underscore.classify
-      base_const = eval <<-RUBY, nil, "dynamic/#{mod_name}", __LINE__ + 1
+      mod_name   = "#{self.name.capitalize}AppStack".underscore.classify
+      base_const = eval <<-CODE, nil, "dynamic/#{mod_name}", __LINE__ + 1
         module #{mod_name}
 
           module Controllers
@@ -237,7 +241,7 @@ module WelltreatStoreFramework
         end
 
         #{mod_name}
-      RUBY
+      CODE
 
       AppStack.generate_partition_object_getter(self, [base_const::Models])
 

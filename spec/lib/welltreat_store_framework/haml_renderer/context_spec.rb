@@ -25,6 +25,10 @@ describe WelltreatStoreFramework::HamlRenderer::Context do
     it 'should add attributes' do
       context.image_tag("abc.png", alt: "hi").should == "<img alt='hi' src='/assets/images/abc.png' />"
     end
+
+    it 'should not prepend /assets if already path started with slash' do
+      context.image_tag('/abc.png').should == "<img src='/abc.png' />"
+    end
   end
 
   describe '#link_to' do
@@ -59,5 +63,11 @@ describe WelltreatStoreFramework::HamlRenderer::Context do
 
   describe '#lorem' do
     it 'should return a line'
+  end
+
+  describe '#strip_tags' do
+    it 'should strip tags' do
+      context.strip_tags("<a>Hola</a>").should == 'Hola'
+    end
   end
 end
