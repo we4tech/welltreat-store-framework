@@ -21,7 +21,7 @@ begin
     gem.summary = "Build store just like your another web development project."
     gem.homepage = 'https://github.com/we4tech/welltreat-store-framework/'
     gem.description = 'WellTreat Store Framework'
-    gem.email   = ["hasan@somewherein.net"]
+    gem.email   = ["hasan83bd@gmail.com"]
     gem.authors = ["nhm tanveer hossain khan"]
     gem.files   = Dir["{lib}/**/*", "{spec}/**/*", "{sample}/**/*"]
   end

@@ -9,9 +9,9 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["nhm tanveer hossain khan"]
-  s.date = "2012-07-01"
+  s.date = "2012-07-10"
   s.description = "WellTreat Store Framework"
-  s.email = ["hasan@somewherein.net"]
+  s.email = ["hasan83bd@gmail.com"]
   s.extra_rdoc_files = [
     "README.md"
   ]
@@ -31,6 +31,7 @@ Gem::Specification.new do |s|
     "lib/welltreat_store_framework/haml_renderer/partial.rb",
     "lib/welltreat_store_framework/haml_renderer/paths.rb",
     "lib/welltreat_store_framework/haml_renderer/tags_helper.rb",
+    "lib/welltreat_store_framework/rack_server.rb",
     "lib/welltreat_store_framework/store_app.rb",
     "sample/hello-store/assets/javascripts/app.js",
     "sample/hello-store/controllers/home.rb",
