@@ -12,6 +12,7 @@ describe 'SampleApp::HelloStore' do
 
   let(:request) { WelltreatStoreFramework::Controller::Request.new }
   let(:response) { WelltreatStoreFramework::Controller::Response.new }
+  let(:session) { mock(:session) }
 
   before(:each) do
     request  = WelltreatStoreFramework::Controller::Request.new
@@ -26,7 +27,7 @@ describe 'SampleApp::HelloStore' do
     describe '/' do
       it 'should render without error' do
         lambda {
-          app.dispatch('/', request, response)
+          app.dispatch('/', request, response, {session: session})
         }.should_not raise_error
       end
 
@@ -45,7 +46,7 @@ describe 'SampleApp::HelloStore' do
           }
         }
 
-        before { app.dispatch('/', request, response) }
+        before { app.dispatch('/', request, response, {session: session}) }
         subject { response }
 
         its([:products]) { should be }
@@ -53,7 +54,7 @@ describe 'SampleApp::HelloStore' do
         its([:products]) { subject.map(&:_id).should == products.map(&:_id) }
 
         describe 'rendered content' do
-          before { app.render!(request, response) }
+          before { app.render!(request, response, {session: session}) }
           subject { response.content }
 
           it 'should have rendered products' do
@@ -89,24 +90,24 @@ describe 'SampleApp::HelloStore' do
       context 'when valid product id' do
         it 'should render without any problem' do
           lambda {
-            app.dispatch("/products/show/#{products.first._id}", request, response)
+            app.dispatch("/products/show/#{products.first._id}", request, response, {session: session})
           }.should_not raise_error
         end
 
         describe 'before rendered' do
-          before { app.dispatch("/products/show/#{products.first._id}", request, response) }
+          before { app.dispatch("/products/show/#{products.first._id}", request, response, {session: session}) }
           subject { response }
 
           its([:product]) { should be }
 
           it 'should render without any error' do
             lambda {
-              app.render!(request, response)
+              app.render!(request, response, {session: session})
             }.should_not raise_error
           end
 
           describe 'after rendered' do
-            before { app.render!(request, response) }
+            before { app.render!(request, response, {session: session}) }
             subject { response.content }
 
             it { should match products.first.name }

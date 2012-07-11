@@ -15,7 +15,8 @@ describe WelltreatStoreFramework::HamlRenderer::Context do
   let(:app) { WelltreatStoreFramework::Core.find_store_by_name('hello-store') }
   let(:request) { WelltreatStoreFramework::Controller::Request.new }
   let(:response) { WelltreatStoreFramework::Controller::Response.new }
-  let(:context) { WelltreatStoreFramework::HamlRenderer::Context.new(app, request, response) }
+  let(:session) { mock(:session) }
+  let(:context) { WelltreatStoreFramework::HamlRenderer::Context.new(app, request, response, {session: session}) }
 
   describe '#image_tag' do
     it 'should render img tag' do

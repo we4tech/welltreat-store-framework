@@ -37,7 +37,7 @@ module WelltreatStoreFramework
       raise StoreApp::TemplateNotFound.new(_file) if _file.nil? || !File.exist?(_file)
 
       if WelltreatStoreFramework::Core.configuration.auto_reload
-        Haml::Engine.new(File.read(_file), filename: _file)
+        Haml::Engine.new(File.read(_file), filename: _file, encoding: 'UTF-8')
       else
         _haml_engines[_key] ||=
             Haml::Engine.new(File.read(_file), filename: _file)

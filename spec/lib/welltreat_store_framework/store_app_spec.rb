@@ -17,15 +17,16 @@ describe WelltreatStoreFramework::StoreApp do
   describe '#dispatch' do
     let(:request) { WelltreatStoreFramework::Controller::Request.new }
     let(:response) { WelltreatStoreFramework::Controller::Response.new }
+    let(:session) { mock(:session) }
 
     it 'should not throw any exception' do
       lambda {
-        app.dispatch('/', request, response)
+        app.dispatch('/', request, response, {session: session})
       }.should_not raise_error
     end
 
     describe 'response object' do
-      before { app.dispatch('/', request, response) }
+      before { app.dispatch('/', request, response, {session: session}) }
       subject { response }
 
       its(:template) { should == :index }
@@ -36,8 +37,8 @@ describe WelltreatStoreFramework::StoreApp do
     end
 
     describe 'rendered content' do
-      before { app.dispatch('/', request, response) }
-      before { app.render!(request, response) }
+      before { app.dispatch('/', request, response, {session: session}) }
+      before { app.render!(request, response, {session: session}) }
       subject { response }
 
       its(:content) { should match 'Hasan' }
@@ -45,8 +46,8 @@ describe WelltreatStoreFramework::StoreApp do
     end
 
     describe 'product controller' do
-      before { app.dispatch('/products', request, response) }
-      before { app.render!(request, response) }
+      before { app.dispatch('/products', request, response, {session: session}) }
+      before { app.render!(request, response, {session: session}) }
       subject { response }
 
       its(:template) { should == :index }
@@ -59,14 +60,14 @@ describe WelltreatStoreFramework::StoreApp do
     context 'auto reload enabled' do
       it 'should have same base module name' do
         _old_app_mod = app.send(:_base_module).name
-        app.dispatch('/', request, response)
+        app.dispatch('/', request, response, {session: session})
 
         app.send(:_base_module).name.should eql _old_app_mod
       end
 
       it 'should have different base object_id' do
         _old_app_mod_id = app.send(:_base_module).object_id
-        app.dispatch('/', request, response)
+        app.dispatch('/', request, response, {session: session})
 
         app.send(:_base_module).object_id.should_not eql _old_app_mod_id
       end
@@ -74,8 +75,8 @@ describe WelltreatStoreFramework::StoreApp do
     end
 
     context 'not found url' do
-      before { app.dispatch('/Something does not exists', request, response) }
-      before { app.render!(request, response) }
+      before { app.dispatch('/Something does not exists', request, response, {session: session}) }
+      before { app.render!(request, response, {session: session}) }
       subject { response }
 
       its(:content) { should match /not\s*found/i }
