@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "welltreat-store-framework"
-  s.version = "0.2.0"
+  s.version = "0.2.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["nhm tanveer hossain khan"]
-  s.date = "2012-07-10"
+  s.date = "2012-07-11"
   s.description = "WellTreat Store Framework"
   s.email = ["hasan83bd@gmail.com"]
   s.extra_rdoc_files = [

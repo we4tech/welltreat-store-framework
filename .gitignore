@@ -1,5 +1,4 @@
 db
-*.gem
 .idea
 doc
 .DS_Store
