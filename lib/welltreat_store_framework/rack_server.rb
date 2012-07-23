@@ -17,11 +17,16 @@ module WelltreatStoreFramework
 
     def call(env)
       _store = _find_store(env)
+      WelltreatStoreFramework::Core.connect_database!
+
       if _store
         _store.call(env)
       else
         raise "Store - #{self.store_name} for partition - #{self.partition_id} not found."
       end
+
+    ensure
+      WelltreatStoreFramework::Core.disconnect_database!
     end
 
     private
@@ -46,11 +51,7 @@ module WelltreatStoreFramework
 
       return store if store.nil?
 
-      store.tap do |_s|
-        _s.start
-        WelltreatStoreFramework::Core.connect_database!
-      end
-
+      store.tap { |_s| _s.start }
     end
   end
 end

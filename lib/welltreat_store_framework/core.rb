@@ -42,6 +42,13 @@ module WelltreatStoreFramework
         end
       end
 
+      # Return connection to poll
+      def disconnect_database!
+        if ActiveRecord::Base.connection.present?
+          ActiveRecord::Base.connection.close
+        end
+      end
+
       private
       def _detect_stores(partition_object = nil)
         _stores = { }
