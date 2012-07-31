@@ -244,10 +244,10 @@ module WelltreatStoreFramework
       CODE
 
       AppStack.generate_partition_object_getter(self, [base_const::Models])
+      self.started = true
 
       base_const
     end
-
 
     # Provide utilities for bootstrapping new app stack
     class AppStack

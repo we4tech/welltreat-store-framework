@@ -13,7 +13,7 @@ module WelltreatStoreFramework
         elsif sprockets_enabled?
           asset_path _path
         else
-          asset_path 'images', _path
+          asset_path app.name, _path
         end
       end
 
@@ -26,7 +26,7 @@ module WelltreatStoreFramework
         elsif sprockets_enabled?
           asset_path _path
         else
-          asset_path 'stylesheets', _path
+          asset_path app.name, _path
         end
       end
 
@@ -39,7 +39,7 @@ module WelltreatStoreFramework
         elsif sprockets_enabled?
           asset_path _path
         else
-          asset_path 'javascripts', _path
+          asset_path app.name, _path
         end
       end
 
